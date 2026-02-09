@@ -37,11 +37,11 @@ function PaymentsContent() {
             const { data: prof } = await supabase.from('profiles').select('*').eq('user_id', user.id).single()
             setProfile(prof)
 
-            if (prof?.circle_id) {
+            if (prof?.organization_id) {
                 const { data: evs } = await supabase
                     .from('events')
                     .select('*')
-                    .eq('circle_id', prof.circle_id)
+                    .eq('organization_id', prof.organization_id)
                     .order('datetime', { ascending: false })
                 setEvents(evs || [])
 

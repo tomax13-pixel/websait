@@ -23,18 +23,18 @@ export default function HomePage() {
 
             const { data: profile } = await supabase
                 .from('profiles')
-                .select('*, circles(*)')
+                .select('*, organizations(*)')
                 .eq('user_id', user.id)
                 .single()
 
             setProfile(profile)
 
-            if (profile?.circle_id) {
+            if (profile?.organization_id) {
                 // Fetch upcoming event
                 const { data: events } = await supabase
                     .from('events')
                     .select('*')
-                    .eq('circle_id', profile.circle_id)
+                    .eq('organization_id', profile.organization_id)
                     .gte('datetime', new Date().toISOString())
                     .order('datetime', { ascending: true })
                     .limit(1)
@@ -67,7 +67,7 @@ export default function HomePage() {
                 const { data: announcements } = await supabase
                     .from('announcements')
                     .select('*')
-                    .eq('circle_id', profile.circle_id)
+                    .eq('organization_id', profile.organization_id)
                     .order('created_at', { ascending: false })
                     .limit(1)
 
@@ -91,7 +91,7 @@ export default function HomePage() {
             <header className="relative bg-knot-gradient text-white p-8 pt-12 rounded-b-[2.5rem] shadow-xl mb-6">
                 <div className="relative z-10">
                     <p className="text-sm opacity-80 font-medium tracking-wider mb-1">
-                        {profile?.circles?.name || 'サークル未設定'}
+                        {profile?.organizations?.name || '組織未設定'}
                     </p>
                     <h1 className="text-3xl font-bold tracking-tight">
                         {profile?.display_name ? `こんにちは、\n${profile.display_name}さん` : 'ようこそ'}

@@ -16,20 +16,20 @@ export default function MembersPage() {
         async function fetchMembers() {
             if (!user) return
 
-            // Get current user's circle
+            // Get current user's organization
             const { data: profile } = await supabase
                 .from('profiles')
-                .select('circle_id')
+                .select('organization_id')
                 .eq('user_id', user.id)
                 .single()
 
-            if (!profile?.circle_id) return
+            if (!profile?.organization_id) return
 
-            // Get all members in the same circle
+            // Get all members in the same organization
             const { data } = await supabase
                 .from('profiles')
                 .select('user_id, display_name, role')
-                .eq('circle_id', profile.circle_id)
+                .eq('organization_id', profile.organization_id)
                 .order('role', { ascending: false }) // owners first
                 .order('display_name')
 

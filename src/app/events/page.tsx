@@ -27,11 +27,11 @@ export default function EventsPage() {
 
             setProfile(profile)
 
-            if (profile?.circle_id) {
+            if (profile?.organization_id) {
                 const { data: eventsData } = await supabase
                     .from('events')
                     .select('*')
-                    .eq('circle_id', profile.circle_id)
+                    .eq('organization_id', profile.organization_id)
                     .order('datetime', { ascending: true })
 
                 setEvents(eventsData || [])

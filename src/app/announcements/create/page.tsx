@@ -43,7 +43,7 @@ export default function CreateAnnouncementPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!profile?.circle_id) return
+        if (!profile?.organization_id) return
         setLoading(true)
         setError(null)
 
@@ -51,7 +51,7 @@ export default function CreateAnnouncementPage() {
             const { error: annError } = await supabase
                 .from('announcements')
                 .insert({
-                    circle_id: profile.circle_id,
+                    organization_id: profile.organization_id,
                     title: formData.title,
                     body: formData.body,
                     created_by: user!.id,

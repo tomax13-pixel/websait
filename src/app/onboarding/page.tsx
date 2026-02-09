@@ -9,7 +9,7 @@ export default function OnboardingPage() {
     const { user, loading: authLoading } = useAuth()
     const [displayName, setDisplayName] = useState('')
     const [mode, setMode] = useState<'join' | 'create' | null>(null)
-    const [circleName, setCircleName] = useState('')
+    const [orgName, setOrgName] = useState('')
     const [joinCode, setJoinCode] = useState('')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -29,37 +29,41 @@ export default function OnboardingPage() {
         setError(null)
 
         try {
-            let circleId = ''
+            let orgId = ''
             const role = user.user_metadata.role || 'member'
 
             if (mode === 'create') {
                 if (role !== 'owner') throw new Error('オーナー権限が必要です。')
 
-                // Use secure RPC to create circle
+                // Use secure RPC to create organization
                 const { data: result, error: rpcError } = await supabase
-                    .rpc('create_circle_secure', { c_name: circleName })
+                    .rpc('create_organization_secure', { org_name: orgName })
 
                 if (rpcError) throw rpcError
 
-                // result is JSONB, so cast it or access it carefully
-                const newCircle = result as any
-                circleId = newCircle.id
+                const newOrg = result as any
+                orgId = newOrg.id
             } else {
-                // Use secure RPC to join circle
+                // Use secure RPC to join organization
                 const { data: result, error: rpcError } = await supabase
-                    .rpc('join_circle_secure', { code: joinCode })
+                    .rpc('join_organization_secure', { code: joinCode })
 
-                if (rpcError) throw new Error('招待コードが無効です。')
+                if (rpcError) {
+                    if (rpcError.message.includes('Member limit')) {
+                        throw new Error('この組織のメンバー上限に達しています。管理者にお問い合わせください。')
+                    }
+                    throw new Error('招待コードが無効です。')
+                }
 
-                const foundCircle = result as any
-                circleId = foundCircle.id
+                const foundOrg = result as any
+                orgId = foundOrg.id
             }
 
             const { error: profileError } = await supabase
                 .from('profiles')
                 .upsert({
                     user_id: user.id,
-                    circle_id: circleId,
+                    organization_id: orgId,
                     role,
                     display_name: displayName,
                 })
@@ -120,13 +124,13 @@ export default function OnboardingPage() {
                             </div>
                         ) : mode === 'create' ? (
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">サークル名</label>
+                                <label className="block text-sm font-medium text-gray-700">組織名</label>
                                 <input
                                     type="text"
                                     required
                                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black"
-                                    value={circleName}
-                                    onChange={(e) => setCircleName(e.target.value)}
+                                    value={orgName}
+                                    onChange={(e) => setOrgName(e.target.value)}
                                 />
                                 <button
                                     type="button"

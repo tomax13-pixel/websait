@@ -9,7 +9,7 @@ import { RefreshCw, UserPlus, ShieldCheck } from 'lucide-react'
 export default function AdminPage() {
     const { user, loading: authLoading } = useAuth()
     const [profile, setProfile] = useState<any>(null)
-    const [circle, setCircle] = useState<any>(null)
+    const [organization, setOrganization] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [updating, setUpdating] = useState(false)
     const [inviteEmail, setInviteEmail] = useState('')
@@ -25,9 +25,9 @@ export default function AdminPage() {
         }
         setProfile(prof)
 
-        if (prof.circle_id) {
-            const { data: circ } = await supabase.from('circles').select('*').eq('id', prof.circle_id).single()
-            setCircle(circ)
+        if (prof.organization_id) {
+            const { data: org } = await supabase.from('organizations').select('*').eq('id', prof.organization_id).single()
+            setOrganization(org)
         }
 
         setLoading(false)
@@ -38,15 +38,15 @@ export default function AdminPage() {
     }, [authLoading, fetchAdminData])
 
     const regenerateJoinCode = async () => {
-        if (!circle) return
+        if (!organization) return
         setUpdating(true)
         const newCode = Math.random().toString(36).substring(2, 10).toUpperCase()
         const { error } = await supabase
-            .from('circles')
+            .from('organizations')
             .update({ join_code: newCode })
-            .eq('id', circle.id)
+            .eq('id', organization.id)
 
-        if (!error) setCircle({ ...circle, join_code: newCode })
+        if (!error) setOrganization({ ...organization, join_code: newCode })
         setUpdating(false)
     }
 
@@ -67,7 +67,7 @@ export default function AdminPage() {
             <section className="bg-black text-white p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
                 <div className="relative z-10">
                     <p className="text-xs font-bold opacity-60 uppercase tracking-widest mb-1">現在の招待コード</p>
-                    <h2 className="text-4xl font-black mb-6">{circle?.join_code}</h2>
+                    <h2 className="text-4xl font-black mb-6">{organization?.join_code}</h2>
                     <button
                         onClick={regenerateJoinCode}
                         disabled={updating}
@@ -106,15 +106,23 @@ export default function AdminPage() {
                 </section>
 
                 <section className="space-y-4 pt-4 border-t border-gray-100">
-                    <h3 className="font-bold text-gray-900">サークル情報</h3>
+                    <h3 className="font-bold text-gray-900">組織情報</h3>
                     <div className="space-y-2">
                         <div className="flex justify-between p-4 bg-gray-50 rounded-xl text-sm">
-                            <span className="text-gray-500">サークル名</span>
-                            <span className="font-bold">{circle?.name}</span>
+                            <span className="text-gray-500">組織名</span>
+                            <span className="font-bold">{organization?.name}</span>
+                        </div>
+                        <div className="flex justify-between p-4 bg-gray-50 rounded-xl text-sm">
+                            <span className="text-gray-500">プラン</span>
+                            <span className="font-bold">{organization?.plan === 'pro' ? 'Pro' : 'Free'}</span>
+                        </div>
+                        <div className="flex justify-between p-4 bg-gray-50 rounded-xl text-sm">
+                            <span className="text-gray-500">メンバー上限</span>
+                            <span className="font-bold">{organization?.member_limit}人</span>
                         </div>
                         <div className="flex justify-between p-4 bg-gray-50 rounded-xl text-sm">
                             <span className="text-gray-500">作成日</span>
-                            <span className="font-bold">{new Date(circle?.created_at).toLocaleDateString('ja-JP')}</span>
+                            <span className="font-bold">{new Date(organization?.created_at).toLocaleDateString('ja-JP')}</span>
                         </div>
                     </div>
                 </section>

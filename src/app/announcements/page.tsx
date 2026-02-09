@@ -26,11 +26,11 @@ export default function AnnouncementsPage() {
 
             setProfile(profile)
 
-            if (profile?.circle_id) {
+            if (profile?.organization_id) {
                 const { data } = await supabase
                     .from('announcements')
                     .select('*, profiles(display_name)')
-                    .eq('circle_id', profile.circle_id)
+                    .eq('organization_id', profile.organization_id)
                     .order('created_at', { ascending: false })
 
                 setAnnouncements(data || [])
