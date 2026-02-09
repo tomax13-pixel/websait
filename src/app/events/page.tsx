@@ -5,14 +5,18 @@ import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/providers/AuthProvider'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { Card } from '@/components/ui/Card'
+import { Calendar } from '@/components/Calendar'
 import Link from 'next/link'
-import { Plus, MapPin, Clock } from 'lucide-react'
+import { Plus, MapPin, Clock, CalendarDays, List } from 'lucide-react'
 
 export default function EventsPage() {
     const { user, loading: authLoading } = useAuth()
     const [profile, setProfile] = useState<any>(null)
     const [events, setEvents] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
+    const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
+    const [selectedDate, setSelectedDate] = useState<Date | null>(null)
+    const [selectedDateEvents, setSelectedDateEvents] = useState<any[]>([])
     const supabase = createClient()
 
     useEffect(() => {
@@ -53,50 +57,102 @@ export default function EventsPage() {
                     <div className="w-1 h-8 bg-[var(--knot-red)] rounded-full" />
                     <h1 className="text-2xl font-bold">イベント</h1>
                 </div>
-                {profile?.role === 'owner' && (
-                    <Link href="/events/create" className="bg-[var(--knot-red)] text-white p-3 rounded-full shadow-[0_4px_14px_rgba(191,30,44,0.4)] hover:bg-[#a01925] hover:-translate-y-1 transition-all">
-                        <Plus size={24} />
-                    </Link>
-                )}
+                <div className="flex items-center gap-2">
+                    {/* View Mode Toggle */}
+                    <div className="flex bg-gray-100 rounded-full p-1">
+                        <button
+                            onClick={() => setViewMode('list')}
+                            className={`p-2 rounded-full transition-all ${viewMode === 'list' ? 'bg-white shadow-sm' : 'text-gray-400'}`}
+                        >
+                            <List size={18} />
+                        </button>
+                        <button
+                            onClick={() => setViewMode('calendar')}
+                            className={`p-2 rounded-full transition-all ${viewMode === 'calendar' ? 'bg-white shadow-sm' : 'text-gray-400'}`}
+                        >
+                            <CalendarDays size={18} />
+                        </button>
+                    </div>
+                    {profile?.role === 'owner' && (
+                        <Link href="/events/create" className="bg-[var(--knot-red)] text-white p-3 rounded-full shadow-[0_4px_14px_rgba(191,30,44,0.4)] hover:bg-[#a01925] hover:-translate-y-1 transition-all">
+                            <Plus size={24} />
+                        </Link>
+                    )}
+                </div>
             </header>
 
-            <div className="space-y-4">
-                {events.length > 0 ? (
-                    events.map((event) => (
-                        <Link
-                            key={event.id}
-                            href={`/events/${event.id}`}
-                            className="block group"
-                        >
-                            <Card className="border-none shadow-[0_4px_20px_rgba(0,0,0,0.05)] group-hover:shadow-[0_8px_30px_rgba(0,0,0,0.1)] group-hover:-translate-y-1 transition-all">
-                                <div className="flex justify-between items-start mb-2">
-                                    <div className="bg-gray-100 text-xs font-bold px-3 py-1 rounded-full text-gray-600">
-                                        {new Date(event.datetime).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric', weekday: 'short' })}
+            {viewMode === 'calendar' ? (
+                <div className="space-y-4">
+                    <Calendar
+                        events={events}
+                        onDateSelect={(date, evts) => {
+                            setSelectedDate(date)
+                            setSelectedDateEvents(evts)
+                        }}
+                    />
+
+                    {/* Selected date events */}
+                    {selectedDate && (
+                        <div className="space-y-3">
+                            <h3 className="text-sm font-bold text-gray-500">
+                                {selectedDate.toLocaleDateString('ja-JP', { month: 'long', day: 'numeric', weekday: 'long' })}
+                            </h3>
+                            {selectedDateEvents.length > 0 ? (
+                                selectedDateEvents.map((event) => (
+                                    <Link key={event.id} href={`/events/${event.id}`} className="block">
+                                        <Card className="border-none shadow-sm hover:shadow-md transition-all">
+                                            <h4 className="font-bold text-gray-900">{event.title}</h4>
+                                            <p className="text-xs text-gray-500 mt-1">
+                                                {new Date(event.datetime).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}
+                                            </p>
+                                        </Card>
+                                    </Link>
+                                ))
+                            ) : (
+                                <p className="text-sm text-gray-400 italic">この日のイベントはありません</p>
+                            )}
+                        </div>
+                    )}
+                </div>
+            ) : (
+                <div className="space-y-4">
+                    {events.length > 0 ? (
+                        events.map((event) => (
+                            <Link
+                                key={event.id}
+                                href={`/events/${event.id}`}
+                                className="block group"
+                            >
+                                <Card className="border-none shadow-[0_4px_20px_rgba(0,0,0,0.05)] group-hover:shadow-[0_8px_30px_rgba(0,0,0,0.1)] group-hover:-translate-y-1 transition-all">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <div className="bg-gray-100 text-xs font-bold px-3 py-1 rounded-full text-gray-600">
+                                            {new Date(event.datetime).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric', weekday: 'short' })}
+                                        </div>
+                                        <span className="text-[var(--knot-gold)] font-bold text-sm">
+                                            ¥{event.fee.toLocaleString()}
+                                        </span>
                                     </div>
-                                    <span className="text-[var(--knot-gold)] font-bold text-sm">
-                                        ¥{event.fee.toLocaleString()}
-                                    </span>
-                                </div>
-                                <h3 className="font-bold text-lg mb-3 text-gray-900">{event.title}</h3>
-                                <div className="mt-2 space-y-2 text-sm text-gray-500">
-                                    <div className="flex items-center gap-2">
-                                        <Clock size={16} className="text-[var(--knot-red)]" />
-                                        <span>{new Date(event.datetime).toLocaleString('ja-JP', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                                    <h3 className="font-bold text-lg mb-3 text-gray-900">{event.title}</h3>
+                                    <div className="mt-2 space-y-2 text-sm text-gray-500">
+                                        <div className="flex items-center gap-2">
+                                            <Clock size={16} className="text-[var(--knot-red)]" />
+                                            <span>{new Date(event.datetime).toLocaleString('ja-JP', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <MapPin size={16} className="text-gray-400" />
+                                            <span>{event.place || '未定'}</span>
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <MapPin size={16} className="text-gray-400" />
-                                        <span>{event.place || '未定'}</span>
-                                    </div>
-                                </div>
-                            </Card>
-                        </Link>
-                    ))
-                ) : (
-                    <Card className="p-12 text-center bg-gray-50/50 border-2 border-dashed border-gray-100 shadow-none">
-                        <p className="text-sm text-gray-400">イベントがまだありません</p>
-                    </Card>
-                )}
-            </div>
+                                </Card>
+                            </Link>
+                        ))
+                    ) : (
+                        <Card className="p-12 text-center bg-gray-50/50 border-2 border-dashed border-gray-100 shadow-none">
+                            <p className="text-sm text-gray-400">イベントがまだありません</p>
+                        </Card>
+                    )}
+                </div>
+            )}
         </div>
     )
 }

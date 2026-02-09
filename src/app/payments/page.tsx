@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useSearchParams } from 'next/navigation'
 import { useAuth } from '@/providers/AuthProvider'
-import { CheckCircle2, Circle } from 'lucide-react'
+import { CheckCircle2, Circle, Download } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 function PaymentsContent() {
@@ -80,10 +80,48 @@ function PaymentsContent() {
         ? payments.filter(p => p.status === 'unpaid')
         : payments
 
+    const selectedEvent = events.find(e => e.id === selectedEventId)
+
+    const exportCSV = () => {
+        if (!selectedEvent || payments.length === 0) return
+
+        const headers = ['メンバー名', '金額', 'ステータス', '更新日']
+        const rows = payments.map(p => [
+            p.profiles?.display_name || '不明',
+            selectedEvent.fee,
+            p.status === 'paid' ? '支払い済み' : '未払い',
+            p.updated_at ? new Date(p.updated_at).toLocaleDateString('ja-JP') : '-'
+        ])
+
+        const csvContent = [
+            headers.join(','),
+            ...rows.map(row => row.join(','))
+        ].join('\n')
+
+        // Add BOM for Excel compatibility with Japanese
+        const bom = '\uFEFF'
+        const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8' })
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `${selectedEvent.title}_支払いレポート_${new Date().toLocaleDateString('ja-JP')}.csv`
+        link.click()
+        URL.revokeObjectURL(url)
+    }
+
     return (
         <div className="p-6 space-y-6 pb-24">
-            <header className="flex items-center gap-4">
+            <header className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold">支払い管理</h1>
+                {profile?.role === 'owner' && payments.length > 0 && (
+                    <button
+                        onClick={exportCSV}
+                        className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-full text-sm font-bold transition-all"
+                    >
+                        <Download size={16} />
+                        CSV出力
+                    </button>
+                )}
             </header>
 
             <div className="space-y-4">
