@@ -1,14 +1,13 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { Suspense, useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { useAuth } from '@/providers/AuthProvider'
-import { ChevronLeft, CheckCircle2, Circle } from 'lucide-react'
-import Link from 'next/link'
+import { CheckCircle2, Circle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-export default function PaymentsPage() {
+function PaymentsContent() {
     const searchParams = useSearchParams()
     const eventId = searchParams.get('event_id')
     const { user, loading: authLoading } = useAuth()
@@ -154,5 +153,13 @@ export default function PaymentsPage() {
                 </div>
             </div>
         </div>
+    )
+}
+
+export default function PaymentsPage() {
+    return (
+        <Suspense fallback={<div className="p-6 text-center text-gray-400">読み込み中...</div>}>
+            <PaymentsContent />
+        </Suspense>
     )
 }
