@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="128" fill="#BF1E2C"/>
+  <text x="50%" y="50%" text-anchor="middle" dy=".35em" fill="#FFFFFF" font-family="sans-serif" font-weight="900" font-size="256">結</text>
+  <path d="M400 100 Q 450 150 400 200" stroke="#B49E69" stroke-width="20" fill="none" opacity="0.5"/>
+</svg>

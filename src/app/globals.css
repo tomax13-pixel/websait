@@ -2,17 +2,24 @@
 
 :root {
   /* Modern Knot Palette */
-  --knot-red: #BF1E2C;          /* Enji (円脂) - Primary */
-  --knot-red-light: #E84D5B;    /* Lighter red for hover */
-  --knot-gold: #B49E69;         /* Gold - Accent */
-  --knot-bg: #FAFAF9;           /* Warm White - Background */
-  --knot-surface: #FFFFFF;      /* Pure White - Surface */
-  --knot-text: #1C1C1E;         /* Sumiiro - Text */
-  --knot-text-muted: #6B7280;   /* Muted Text */
-  
+  --knot-red: #BF1E2C;
+  /* Enji (円脂) - Primary */
+  --knot-red-light: #E84D5B;
+  /* Lighter red for hover */
+  --knot-gold: #B49E69;
+  /* Gold - Accent */
+  --knot-bg: #FAFAF9;
+  /* Warm White - Background */
+  --knot-surface: #FFFFFF;
+  /* Pure White - Surface */
+  --knot-text: #1C1C1E;
+  /* Sumiiro - Text */
+  --knot-text-muted: #6B7280;
+  /* Muted Text */
+
   --background: var(--knot-bg);
   --foreground: var(--knot-text);
-  
+
   /* Font Stack */
   --font-jp: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "BIZ UDPGothic", "Meiryo", sans-serif;
 }
@@ -22,7 +29,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-jp), var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  
+
   /* Custom Colors */
   --color-knot-red: var(--knot-red);
   --color-knot-gold: var(--knot-gold);
@@ -34,7 +41,7 @@
     --knot-surface: #2C2C2E;
     --knot-text: #F2F2F7;
     --knot-text-muted: #AEAEB2;
-    
+
     --background: var(--knot-bg);
     --foreground: var(--knot-text);
   }
@@ -66,6 +73,12 @@ body {
 
 .text-knot-gradient {
   background: linear-gradient(135deg, var(--knot-red) 0%, #8C1C26 100%);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+/* Safe Area Utilities */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 20px);
 }

@@ -5,6 +5,7 @@ import { PWAScript } from "@/components/PWAScript";
 import { AuthProvider } from "@/providers/AuthProvider";
 import { BottomNav } from "@/components/BottomNav";
 import { NotificationManager } from "@/components/NotificationManager";
+import { InstallPrompt } from "@/components/InstallPrompt";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -39,6 +40,7 @@ export default function RootLayout({
         <AuthProvider>
           <PWAScript />
           <NotificationManager />
+          <InstallPrompt />
           <main className="max-w-md mx-auto min-h-screen bg-white shadow-sm">
             {children}
           </main>

@@ -47,12 +47,12 @@ export default function MembersPage() {
 
     return (
         <div className="p-6 space-y-6 pb-24">
-            <header className="flex justify-between items-center">
+            <header className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
                 <div className="flex items-center gap-2">
                     <div className="w-1 h-8 bg-[var(--knot-gold)] rounded-full" />
                     <h1 className="text-2xl font-bold">メンバー一覧</h1>
                 </div>
-                <div className="flex gap-3 text-sm text-gray-500 font-medium">
+                <div className="flex gap-2 text-sm text-gray-500 font-medium self-start sm:self-auto">
                     <span className="bg-white px-3 py-1 rounded-full shadow-sm border border-gray-100">総数: {members.length}</span>
                     <span className="bg-[var(--knot-gold)]/10 text-[var(--knot-gold)] px-3 py-1 rounded-full">管理者: {ownerCount}</span>
                 </div>
@@ -67,8 +67,8 @@ export default function MembersPage() {
                     >
                         <div className="flex items-center gap-4">
                             <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-sm ${member.role === 'owner'
-                                    ? 'bg-gradient-to-br from-[var(--knot-gold)] to-[#8C7A4A] text-white'
-                                    : 'bg-gradient-to-br from-gray-100 to-gray-200 text-gray-500'
+                                ? 'bg-gradient-to-br from-[var(--knot-gold)] to-[#8C7A4A] text-white'
+                                : 'bg-gradient-to-br from-gray-100 to-gray-200 text-gray-500'
                                 }`}>
                                 {member.role === 'owner' ? (
                                     <Crown size={20} />

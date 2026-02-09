@@ -10,7 +10,7 @@ const navItems = [
     { name: 'イベント', href: '/events', icon: Calendar },
     { name: 'メンバー', href: '/members', icon: Users },
     { name: 'お知らせ', href: '/announcements', icon: Megaphone },
-    { name: '管理', href: '/admin', icon: Settings },
+    { name: '設定', href: '/settings', icon: Settings },
 ]
 
 export function BottomNav() {
