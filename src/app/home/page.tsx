@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/providers/AuthProvider'
+import { useRouter } from 'next/navigation'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { Card } from '@/components/ui/Card'
 import { NotificationPermission } from '@/components/NotificationPermission'
@@ -11,6 +12,7 @@ import Link from 'next/link'
 
 export default function HomePage() {
     const { user, loading: authLoading } = useAuth()
+    const router = useRouter()
     const [profile, setProfile] = useState<any>(null)
     const [stats, setStats] = useState({ unpaid: 0, pendingRsvps: 0 })
     const [upcomingEvent, setUpcomingEvent] = useState<any>(null)
@@ -27,6 +29,12 @@ export default function HomePage() {
                 .select('*, organizations(*)')
                 .eq('user_id', user.id)
                 .single()
+
+            // Redirect to onboarding if no profile or no organization
+            if (!profile || !profile.organization_id) {
+                router.push('/onboarding')
+                return
+            }
 
             setProfile(profile)
 
