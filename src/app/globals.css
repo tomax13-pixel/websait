@@ -22,6 +22,9 @@
 
   /* Font Stack */
   --font-jp: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "BIZ UDPGothic", "Meiryo", sans-serif;
+
+  /* Force light color scheme */
+  color-scheme: light;
 }
 
 @theme inline {
@@ -35,6 +38,7 @@
   --color-knot-gold: var(--knot-gold);
 }
 
+/* DISABLED: Dark mode causes text visibility issues
 @media (prefers-color-scheme: dark) {
   :root {
     --knot-bg: #1C1C1E;
@@ -46,11 +50,28 @@
     --foreground: var(--knot-text);
   }
 }
+*/
+
+html {
+  /* Force light mode on HTML element */
+  color-scheme: light only;
+}
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-jp), var(--font-geist-sans), Arial, sans-serif;
+}
+
+/* Force page titles/headers to be dark text */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: #1C1C1E !important;
+  -webkit-text-fill-color: #1C1C1E !important;
 }
 
 /* Glassmorphism Utilities */
@@ -59,11 +80,6 @@ body {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.dark .glass {
-  background: rgba(28, 28, 30, 0.7);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Knot Gradient */
@@ -97,4 +113,13 @@ textarea::placeholder {
   color: #9CA3AF !important;
   -webkit-text-fill-color: #9CA3AF !important;
   opacity: 1;
+}
+
+/* Force all text to be dark in light mode app */
+p,
+span,
+div,
+label,
+a {
+  --tw-text-opacity: 1;
 }
