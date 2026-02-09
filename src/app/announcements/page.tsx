@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/providers/AuthProvider'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { Card } from '@/components/ui/Card'
 import Link from 'next/link'
 import { Plus, Megaphone } from 'lucide-react'
 
@@ -57,31 +58,33 @@ export default function AnnouncementsPage() {
             <div className="space-y-4">
                 {announcements.length > 0 ? (
                     announcements.map((ann) => (
-                        <div
+                        <Card
                             key={ann.id}
-                            className="p-6 border border-gray-100 rounded-3xl bg-white shadow-sm"
+                            className="p-6 border-none shadow-sm hover:shadow-md transition-all"
                         >
-                            <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
-                                <Megaphone size={12} />
-                                <span>告知 • {new Date(ann.created_at).toLocaleDateString('ja-JP')}</span>
+                            <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">
+                                <span className="bg-gray-100 px-2 py-1 rounded-full text-gray-500">
+                                    {new Date(ann.created_at).toLocaleDateString('ja-JP')}
+                                </span>
                             </div>
                             <h3 className="font-black text-xl text-gray-900 leading-tight mb-3">{ann.title}</h3>
                             <p className="text-gray-600 text-sm whitespace-pre-wrap leading-relaxed">
                                 {ann.body}
                             </p>
                             <div className="mt-4 pt-4 border-t border-gray-50 flex items-center gap-2">
-                                <div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center text-[10px] font-bold text-gray-500">
+                                <div className="w-6 h-6 bg-[var(--knot-red)]/5 rounded-full flex items-center justify-center text-[10px] font-bold text-[var(--knot-red)]">
                                     {ann.profiles?.display_name?.[0]}
                                 </div>
                                 <span className="text-xs text-gray-500 font-medium">{ann.profiles?.display_name}</span>
                             </div>
-                        </div>
+                        </Card>
                     ))
                 ) : (
                     <div className="p-12 text-center bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
                         <p className="text-sm text-gray-400">新しいお知らせはありません</p>
                     </div>
-                )}
+                )
+                }
             </div>
         </div>
     )

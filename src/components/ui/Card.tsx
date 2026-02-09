@@ -9,7 +9,7 @@ export function Card({ children, className, noPadding = false, ...props }: CardP
     return (
         <div
             className={cn(
-                "bg-white rounded-[1.5rem] shadow-sm border border-gray-100 overflow-hidden transition-all hover:shadow-md",
+                "bg-white rounded-[1.5rem] shadow-sm border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5",
                 noPadding ? "" : "p-5",
                 className
             )}

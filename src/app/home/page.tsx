@@ -16,7 +16,7 @@ export default function HomePage() {
     const [profile, setProfile] = useState<any>(null)
     const [stats, setStats] = useState({ unpaid: 0, pendingRsvps: 0 })
     const [upcomingEvent, setUpcomingEvent] = useState<any>(null)
-    const [latestAnnouncement, setLatestAnnouncement] = useState<any>(null)
+    const [latestAnnouncements, setLatestAnnouncements] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const supabase = createClient()
 
@@ -72,16 +72,16 @@ export default function HomePage() {
                     })
                 }
 
-                // Fetch latest announcement
+                // Fetch latest announcements
                 const { data: announcements } = await supabase
                     .from('announcements')
                     .select('*')
                     .eq('organization_id', profile.organization_id)
                     .order('created_at', { ascending: false })
-                    .limit(1)
+                    .limit(5)
 
-                if (announcements && announcements[0]) {
-                    setLatestAnnouncement(announcements[0])
+                if (announcements) {
+                    setLatestAnnouncements(announcements)
                 }
             }
             setLoading(false)
@@ -186,26 +186,41 @@ export default function HomePage() {
 
                 {/* Announcements */}
                 <section className="space-y-4">
-                    <h2 className="text-lg font-bold flex items-center gap-2 text-gray-900">
-                        <div className="w-1 h-6 bg-[var(--knot-gold)] rounded-full" />
-                        最新の告知
-                    </h2>
-                    {latestAnnouncement ? (
-                        <Link href="/announcements">
-                            <Card className="border-none shadow-[0_4px_20px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all">
-                                <div className="flex items-start gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-[var(--knot-gold)]/10 flex items-center justify-center text-[var(--knot-gold)] shrink-0">
-                                        <MessageSquare size={18} />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <h3 className="font-bold text-gray-900 truncate">{latestAnnouncement.title}</h3>
-                                        <p className="text-xs text-gray-400 mt-1">
-                                            {new Date(latestAnnouncement.created_at).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })}
-                                        </p>
-                                    </div>
-                                </div>
-                            </Card>
+                    <div className="flex items-center justify-between">
+                        <h2 className="text-lg font-bold flex items-center gap-2 text-gray-900">
+                            <div className="w-1 h-6 bg-[var(--knot-gold)] rounded-full" />
+                            最新の告知
+                        </h2>
+                        <Link href="/announcements" className="text-xs text-[var(--knot-gold)] font-bold hover:underline">
+                            すべて見る
                         </Link>
+                    </div>
+
+                    {latestAnnouncements.length > 0 ? (
+                        <div className="flex overflow-x-auto space-x-4 pb-4 -mx-6 px-6 snap-x snap-mandatory scrollbar-hide">
+                            {latestAnnouncements.map((announcement: any) => (
+                                <Link key={announcement.id} href={`/announcements`} className="snap-center shrink-0 w-[85vw] max-w-[300px]">
+                                    <Card className="h-full border-none shadow-[0_4px_20px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all active:scale-[0.98]">
+                                        <div className="flex flex-col gap-3 h-full">
+                                            <div className="flex justify-between items-start">
+                                                <div className="w-10 h-10 rounded-xl bg-[var(--knot-gold)]/10 flex items-center justify-center text-[var(--knot-gold)] shrink-0">
+                                                    <MessageSquare size={18} />
+                                                </div>
+                                                <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded-full font-medium">
+                                                    {new Date(announcement.created_at).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <h3 className="font-bold text-gray-900 line-clamp-2 mb-1">{announcement.title}</h3>
+                                                <p className="text-xs text-gray-500 line-clamp-2">
+                                                    {announcement.content || '詳細を確認するにはタップしてください'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </Card>
+                                </Link>
+                            ))}
+                        </div>
                     ) : (
                         <Card className="bg-gray-50/50 border-none shadow-none">
                             <div className="flex items-center gap-3 text-gray-400 italic text-sm">
