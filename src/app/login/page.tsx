@@ -43,7 +43,8 @@ export default function LoginPage() {
                     password,
                 })
                 if (error) throw error
-                router.push('/onboarding')
+                router.refresh()
+                router.push('/home')
             }
         } catch (err: any) {
             setError(err.message)
@@ -68,7 +69,7 @@ export default function LoginPage() {
                             <input
                                 type="email"
                                 required
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black"
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black text-gray-900 bg-white"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                             />
@@ -78,7 +79,7 @@ export default function LoginPage() {
                             <input
                                 type="password"
                                 required
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black"
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black text-gray-900 bg-white"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                             />
@@ -88,7 +89,7 @@ export default function LoginPage() {
                                 <label className="block text-sm font-medium text-gray-700">オーナー作成コード (管理者のみ)</label>
                                 <input
                                     type="text"
-                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black"
+                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black text-gray-900 bg-white"
                                     value={ownerCode}
                                     onChange={(e) => setOwnerCode(e.target.value)}
                                 />
