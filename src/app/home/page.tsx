@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/providers/AuthProvider'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { Card } from '@/components/ui/Card'
+import { NotificationPermission } from '@/components/NotificationPermission'
 import { Calendar, CreditCard, MessageSquare } from 'lucide-react'
 import Link from 'next/link'
 
@@ -103,6 +104,9 @@ export default function HomePage() {
             </header>
 
             <div className="px-6 space-y-8">
+                {/* Notification Permission Banner */}
+                <NotificationPermission />
+
                 {/* Stats Cards */}
                 <div className="grid grid-cols-2 gap-4">
                     <Link href="/payments" className="group">

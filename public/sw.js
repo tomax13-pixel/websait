@@ -1,52 +1,64 @@
-const CACHE_NAME = 'circle-knot-v1';
-const ASSETS_TO_CACHE = [
-    '/',
-    '/manifest.json',
-    '/icons/icon-192x192.png',
-    '/icons/icon-512x512.png'
-];
+// Service Worker for Web Push Notifications
+// サークル結 - Push Notification Handler
 
-self.addEventListener('install', (event) => {
-    event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(ASSETS_TO_CACHE);
-        })
-    );
-});
+self.addEventListener('push', function (event) {
+    if (!event.data) return;
 
-self.addEventListener('fetch', (event) => {
-    event.respondWith(
-        caches.match(event.request).then((response) => {
-            return response || fetch(event.request);
-        })
-    );
-});
+    const data = event.data.json();
 
-// Push notification handler
-self.addEventListener('push', (event) => {
-    const data = event.data ? event.data.json() : {};
-    const title = data.title || 'サークル結';
     const options = {
-        body: data.body || '新しい通知があります',
+        body: data.body || 'サークル結からの通知',
         icon: '/icons/icon-192x192.png',
         badge: '/icons/icon-192x192.png',
-        data: data.url ? { url: data.url } : {},
-        vibrate: [200, 100, 200],
-        requireInteraction: false
+        vibrate: [100, 50, 100],
+        data: {
+            url: data.url || '/home',
+            dateOfArrival: Date.now(),
+        },
+        actions: [
+            { action: 'open', title: '開く' },
+            { action: 'close', title: '閉じる' },
+        ],
+        tag: data.tag || 'notification',
+        renotify: true,
     };
 
     event.waitUntil(
-        self.registration.showNotification(title, options)
+        self.registration.showNotification(data.title || 'サークル結', options)
     );
 });
 
-// Notification click handler
-self.addEventListener('notificationclick', (event) => {
+self.addEventListener('notificationclick', function (event) {
     event.notification.close();
 
-    if (event.notification.data && event.notification.data.url) {
-        event.waitUntil(
-            clients.openWindow(event.notification.data.url)
-        );
-    }
+    if (event.action === 'close') return;
+
+    const urlToOpen = event.notification.data?.url || '/home';
+
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true })
+            .then(function (clientList) {
+                // 既存のウィンドウがあればフォーカス
+                for (const client of clientList) {
+                    if (client.url.includes(self.location.origin) && 'focus' in client) {
+                        client.navigate(urlToOpen);
+                        return client.focus();
+                    }
+                }
+                // なければ新しいウィンドウを開く
+                if (clients.openWindow) {
+                    return clients.openWindow(urlToOpen);
+                }
+            })
+    );
+});
+
+// Service Worker のインストール
+self.addEventListener('install', function (event) {
+    self.skipWaiting();
+});
+
+// Service Worker のアクティベート
+self.addEventListener('activate', function (event) {
+    event.waitUntil(clients.claim());
 });
