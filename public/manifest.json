@@ -1,0 +1,21 @@
+{
+  "name": "サークル結 (Circle Knot)",
+  "short_name": "サークル結",
+  "description": "サークル出欠・集金管理アプリ",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAFAF9",
+  "theme_color": "#BF1E2C",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
