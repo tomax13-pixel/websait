@@ -82,3 +82,19 @@ body {
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom, 20px);
 }
+
+/* Force Light Mode for Form Inputs */
+input,
+textarea,
+select {
+  color: #1C1C1E !important;
+  background-color: #FFFFFF !important;
+  -webkit-text-fill-color: #1C1C1E !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #9CA3AF !important;
+  -webkit-text-fill-color: #9CA3AF !important;
+  opacity: 1;
+}
