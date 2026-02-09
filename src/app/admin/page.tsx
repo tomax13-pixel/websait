@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/AuthProvider'
-import { RefreshCw, UserPlus, ShieldCheck } from 'lucide-react'
+import { RefreshCw, UserPlus, ShieldCheck, Pencil, Check, X } from 'lucide-react'
 
 export default function AdminPage() {
     const { user, loading: authLoading } = useAuth()
@@ -13,13 +13,16 @@ export default function AdminPage() {
     const [loading, setLoading] = useState(true)
     const [updating, setUpdating] = useState(false)
     const [inviteEmail, setInviteEmail] = useState('')
+    const [isEditingName, setIsEditingName] = useState(false)
+    const [editedName, setEditedName] = useState('')
+    const [savingName, setSavingName] = useState(false)
     const router = useRouter()
     const supabase = createClient()
 
     const fetchAdminData = useCallback(async () => {
         if (!user) return
         const { data: prof } = await supabase.from('profiles').select('*').eq('user_id', user.id).single()
-        if (prof?.role !== 'owner') {
+        if (prof?.role !== 'owner' && prof?.role !== 'admin') {
             router.push('/home')
             return
         }
@@ -28,6 +31,7 @@ export default function AdminPage() {
         if (prof.organization_id) {
             const { data: org } = await supabase.from('organizations').select('*').eq('id', prof.organization_id).single()
             setOrganization(org)
+            setEditedName(org?.name || '')
         }
 
         setLoading(false)
@@ -54,6 +58,29 @@ export default function AdminPage() {
         e.preventDefault()
         alert(`${inviteEmail} への招待機能は Edge Function 実装後に有効化されます。`)
         setInviteEmail('')
+    }
+
+    const handleSaveName = async () => {
+        if (!organization || !editedName.trim()) return
+        setSavingName(true)
+
+        const { error } = await supabase
+            .from('organizations')
+            .update({ name: editedName.trim() })
+            .eq('id', organization.id)
+
+        if (!error) {
+            setOrganization({ ...organization, name: editedName.trim() })
+            setIsEditingName(false)
+        } else {
+            alert('保存に失敗しました: ' + error.message)
+        }
+        setSavingName(false)
+    }
+
+    const handleCancelEdit = () => {
+        setEditedName(organization?.name || '')
+        setIsEditingName(false)
     }
 
     if (loading) return null
@@ -108,9 +135,49 @@ export default function AdminPage() {
                 <section className="space-y-4 pt-4 border-t border-gray-100">
                     <h3 className="font-bold text-gray-900">組織情報</h3>
                     <div className="space-y-2">
-                        <div className="flex justify-between p-4 bg-gray-50 rounded-xl text-sm">
-                            <span className="text-gray-500">組織名</span>
-                            <span className="font-bold">{organization?.name}</span>
+                        {/* Editable Organization Name */}
+                        <div className="p-4 bg-gray-50 rounded-xl text-sm">
+                            <div className="flex justify-between items-center">
+                                <span className="text-gray-500">組織名</span>
+                                {isEditingName ? (
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="text"
+                                            value={editedName}
+                                            onChange={(e) => setEditedName(e.target.value)}
+                                            className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-bold focus:ring-2 focus:ring-black focus:outline-none w-40"
+                                            autoFocus
+                                        />
+                                        <button
+                                            onClick={handleSaveName}
+                                            disabled={savingName || !editedName.trim()}
+                                            className="p-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 transition-colors"
+                                        >
+                                            {savingName ? (
+                                                <RefreshCw size={16} className="animate-spin" />
+                                            ) : (
+                                                <Check size={16} />
+                                            )}
+                                        </button>
+                                        <button
+                                            onClick={handleCancelEdit}
+                                            className="p-1.5 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition-colors"
+                                        >
+                                            <X size={16} />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-bold">{organization?.name}</span>
+                                        <button
+                                            onClick={() => setIsEditingName(true)}
+                                            className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-lg transition-colors"
+                                        >
+                                            <Pencil size={14} />
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                         <div className="flex justify-between p-4 bg-gray-50 rounded-xl text-sm">
                             <span className="text-gray-500">プラン</span>
