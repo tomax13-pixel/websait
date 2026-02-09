@@ -64,11 +64,21 @@ export default function EventDetailPage() {
                     updated_at: new Date().toISOString()
                 }, { onConflict: 'event_id,user_id' })
             } else {
-                // Remove payment record if status is not yes (no or maybe)
-                await supabase.from('payments').delete().match({
-                    event_id: id,
-                    user_id: user!.id
-                })
+                // Only remove payment record if status is unpaid (protect paid records)
+                const { data: existingPayment } = await supabase
+                    .from('payments')
+                    .select('status')
+                    .eq('event_id', id)
+                    .eq('user_id', user!.id)
+                    .single()
+
+                if (existingPayment?.status === 'unpaid') {
+                    await supabase.from('payments').delete().match({
+                        event_id: id,
+                        user_id: user!.id
+                    })
+                }
+                // If already paid, keep the record (prevent accidental deletion)
             }
         }
 

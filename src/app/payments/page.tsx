@@ -17,6 +17,7 @@ function PaymentsContent() {
     const [payments, setPayments] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [updating, setUpdating] = useState<string | null>(null)
+    const [showUnpaidOnly, setShowUnpaidOnly] = useState(false)
     const supabase = createClient()
 
     const fetchPayments = useCallback(async (eid: string) => {
@@ -75,6 +76,10 @@ function PaymentsContent() {
 
     if (authLoading) return null
 
+    const filteredPayments = showUnpaidOnly
+        ? payments.filter(p => p.status === 'unpaid')
+        : payments
+
     return (
         <div className="p-6 space-y-6 pb-24">
             <header className="flex items-center gap-4">
@@ -98,15 +103,34 @@ function PaymentsContent() {
                     </select>
                 </div>
 
+                {/* Filter Toggle */}
+                <div className="flex items-center justify-between bg-gray-50 p-3 rounded-xl">
+                    <span className="text-sm font-medium text-gray-600">未払いのみ表示</span>
+                    <button
+                        onClick={() => setShowUnpaidOnly(!showUnpaidOnly)}
+                        className={cn(
+                            "w-12 h-7 rounded-full transition-colors relative",
+                            showUnpaidOnly ? "bg-[var(--knot-red)]" : "bg-gray-300"
+                        )}
+                    >
+                        <div
+                            className={cn(
+                                "w-5 h-5 bg-white rounded-full absolute top-1 transition-all shadow-sm",
+                                showUnpaidOnly ? "right-1" : "left-1"
+                            )}
+                        />
+                    </button>
+                </div>
+
                 <section className="space-y-3">
                     <div className="flex justify-between items-center text-xs font-bold text-gray-400">
-                        <span>メンバー</span>
+                        <span>メンバー ({filteredPayments.length}人)</span>
                         <span>ステータス</span>
                     </div>
                     {loading ? (
                         <div className="text-center py-10 text-gray-400 italic">読み込み中...</div>
-                    ) : payments.length > 0 ? (
-                        payments.map((p) => (
+                    ) : filteredPayments.length > 0 ? (
+                        filteredPayments.map((p) => (
                             <div
                                 key={p.id}
                                 onClick={() => togglePayment(p.id, p.status)}
@@ -132,7 +156,7 @@ function PaymentsContent() {
                         ))
                     ) : (
                         <div className="text-center py-12 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
-                            <p className="text-sm text-gray-400">支払い対象者がいません</p>
+                            <p className="text-sm text-gray-400">{showUnpaidOnly ? '未払いの人はいません' : '支払い対象者がいません'}</p>
                             <p className="text-xs text-gray-400 mt-1">(RSVP『参加』のみ自動追加)</p>
                         </div>
                     )}

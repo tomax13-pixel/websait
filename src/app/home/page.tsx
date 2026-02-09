@@ -13,6 +13,7 @@ export default function HomePage() {
     const [profile, setProfile] = useState<any>(null)
     const [stats, setStats] = useState({ unpaid: 0, pendingRsvps: 0 })
     const [upcomingEvent, setUpcomingEvent] = useState<any>(null)
+    const [latestAnnouncement, setLatestAnnouncement] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const supabase = createClient()
 
@@ -47,7 +48,7 @@ export default function HomePage() {
                         .select('*', { count: 'exact', head: true })
                         .eq('event_id', events[0].id)
                         .eq('user_id', user.id)
-                        .is('status', null) // This logic might need adjustment based on how we handle "null" status
+                        .is('status', null)
 
                     // Count unpaid payments
                     const { count: unpaidCount } = await supabase
@@ -60,6 +61,18 @@ export default function HomePage() {
                         unpaid: unpaidCount || 0,
                         pendingRsvps: pendingRsvpCount || 0
                     })
+                }
+
+                // Fetch latest announcement
+                const { data: announcements } = await supabase
+                    .from('announcements')
+                    .select('*')
+                    .eq('circle_id', profile.circle_id)
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+
+                if (announcements && announcements[0]) {
+                    setLatestAnnouncement(announcements[0])
                 }
             }
             setLoading(false)
@@ -165,12 +178,30 @@ export default function HomePage() {
                         <div className="w-1 h-6 bg-[var(--knot-gold)] rounded-full" />
                         最新の告知
                     </h2>
-                    <Card className="bg-gray-50/50 border-none shadow-none">
-                        <div className="flex items-center gap-3 text-gray-400 italic text-sm">
-                            <MessageSquare size={16} />
-                            <p>新しいお知らせはありません</p>
-                        </div>
-                    </Card>
+                    {latestAnnouncement ? (
+                        <Link href="/announcements">
+                            <Card className="border-none shadow-[0_4px_20px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all">
+                                <div className="flex items-start gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-[var(--knot-gold)]/10 flex items-center justify-center text-[var(--knot-gold)] shrink-0">
+                                        <MessageSquare size={18} />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="font-bold text-gray-900 truncate">{latestAnnouncement.title}</h3>
+                                        <p className="text-xs text-gray-400 mt-1">
+                                            {new Date(latestAnnouncement.created_at).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })}
+                                        </p>
+                                    </div>
+                                </div>
+                            </Card>
+                        </Link>
+                    ) : (
+                        <Card className="bg-gray-50/50 border-none shadow-none">
+                            <div className="flex items-center gap-3 text-gray-400 italic text-sm">
+                                <MessageSquare size={16} />
+                                <p>新しいお知らせはありません</p>
+                            </div>
+                        </Card>
+                    )}
                 </section>
             </div>
         </div>
