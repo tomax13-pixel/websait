@@ -8,6 +8,12 @@ import { ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
 import { notifyEventCreated } from '@/lib/notifications'
 
+const CANCEL_POLICY_OPTIONS = [
+    { value: 'free', label: '自由キャンセル', desc: 'いつでもキャンセル可能' },
+    { value: 'deadline_only', label: '締切後キャンセル不可', desc: '回答締切後は変更不可' },
+    { value: 'penalty', label: 'ペナルティあり', desc: '締切後のキャンセルにペナルティ' },
+]
+
 export default function CreateEventPage() {
     const { user, loading: authLoading } = useAuth()
     const [profile, setProfile] = useState<any>(null)
@@ -23,6 +29,9 @@ export default function CreateEventPage() {
         fee: '0',
         note: '',
         rsvp_deadline: '',
+        capacity: '',
+        cancel_policy: 'free',
+        cancel_fee: '0',
     })
 
     useEffect(() => {
@@ -34,7 +43,7 @@ export default function CreateEventPage() {
                 .eq('user_id', user.id)
                 .single()
 
-            if (data?.role !== 'owner') {
+            if (data?.role !== 'owner' && data?.role !== 'admin') {
                 router.push('/events')
             }
             setProfile(data)
@@ -64,6 +73,9 @@ export default function CreateEventPage() {
                     note: formData.note,
                     rsvp_deadline: new Date(formData.rsvp_deadline).toISOString(),
                     created_by: user!.id,
+                    capacity: formData.capacity ? parseInt(formData.capacity) : null,
+                    cancel_policy: formData.cancel_policy,
+                    cancel_fee: formData.cancel_policy === 'penalty' ? parseInt(formData.cancel_fee) : 0,
                 })
                 .select()
                 .single()
@@ -143,16 +155,72 @@ export default function CreateEventPage() {
                     />
                 </div>
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">参加費 (円)</label>
-                    <input
-                        type="number"
-                        required
-                        className="mt-1 block w-full px-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-black"
-                        value={formData.fee}
-                        onChange={(e) => setFormData({ ...formData, fee: e.target.value })}
-                    />
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">参加費 (円)</label>
+                        <input
+                            type="number"
+                            required
+                            className="mt-1 block w-full px-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-black"
+                            value={formData.fee}
+                            onChange={(e) => setFormData({ ...formData, fee: e.target.value })}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">定員</label>
+                        <input
+                            type="number"
+                            className="mt-1 block w-full px-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-black"
+                            value={formData.capacity}
+                            onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
+                            placeholder="制限なし"
+                            min="1"
+                        />
+                    </div>
                 </div>
+
+                {/* Cancel Policy */}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">キャンセルポリシー</label>
+                    <div className="space-y-2">
+                        {CANCEL_POLICY_OPTIONS.map(option => (
+                            <label
+                                key={option.value}
+                                className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border-2 ${formData.cancel_policy === option.value
+                                    ? 'border-black bg-gray-50'
+                                    : 'border-gray-100 hover:border-gray-200'
+                                    }`}
+                            >
+                                <input
+                                    type="radio"
+                                    name="cancel_policy"
+                                    value={option.value}
+                                    checked={formData.cancel_policy === option.value}
+                                    onChange={(e) => setFormData({ ...formData, cancel_policy: e.target.value })}
+                                    className="accent-black"
+                                />
+                                <div>
+                                    <p className="font-bold text-sm">{option.label}</p>
+                                    <p className="text-xs text-gray-400">{option.desc}</p>
+                                </div>
+                            </label>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Cancel Fee (only shown for penalty policy) */}
+                {formData.cancel_policy === 'penalty' && (
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">キャンセル料 (円)</label>
+                        <input
+                            type="number"
+                            className="mt-1 block w-full px-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-black"
+                            value={formData.cancel_fee}
+                            onChange={(e) => setFormData({ ...formData, cancel_fee: e.target.value })}
+                            min="0"
+                        />
+                    </div>
+                )}
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700">備考</label>

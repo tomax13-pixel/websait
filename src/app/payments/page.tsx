@@ -59,7 +59,7 @@ function PaymentsContent() {
     }, [user, authLoading, selectedEventId, fetchPayments, supabase])
 
     const togglePayment = async (paymentId: string, currentStatus: string) => {
-        if (profile?.role !== 'owner') return
+        if (profile?.role !== 'owner' && profile?.role !== 'admin') return
         setUpdating(paymentId)
 
         const newStatus = currentStatus === 'paid' ? 'unpaid' : 'paid'
@@ -113,7 +113,7 @@ function PaymentsContent() {
         <div className="p-6 space-y-6 pb-24">
             <header className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold">支払い管理</h1>
-                {profile?.role === 'owner' && payments.length > 0 && (
+                {(profile?.role === 'owner' || profile?.role === 'admin') && payments.length > 0 && (
                     <button
                         onClick={exportCSV}
                         className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-full text-sm font-bold transition-all"

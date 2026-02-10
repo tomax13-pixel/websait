@@ -1,26 +1,39 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/providers/AuthProvider'
 
 export default function OnboardingPage() {
+    return (
+        <Suspense fallback={null}>
+            <OnboardingContent />
+        </Suspense>
+    )
+}
+
+function OnboardingContent() {
     const { user, loading: authLoading } = useAuth()
     const [displayName, setDisplayName] = useState('')
-    const [mode, setMode] = useState<'join' | 'create' | null>(null)
+    const [mode, setMode] = useState<'join' | 'create' | 'invite' | null>(null)
     const [orgName, setOrgName] = useState('')
     const [joinCode, setJoinCode] = useState('')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const inviteToken = searchParams.get('invite')
     const supabase = createClient()
 
     useEffect(() => {
         if (!authLoading && !user) {
             router.push('/login')
         }
-    }, [user, authLoading, router])
+        if (inviteToken) {
+            setMode('invite')
+        }
+    }, [user, authLoading, router, inviteToken])
 
     const handleOnboarding = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -30,12 +43,10 @@ export default function OnboardingPage() {
 
         try {
             let orgId = ''
-            const role = user.user_metadata.role || 'member'
+            let role = 'member'
 
             if (mode === 'create') {
-                if (role !== 'owner') throw new Error('オーナー権限が必要です。')
-
-                // Use secure RPC to create organization
+                // RPC creates org and sets caller as 'owner'
                 const { data: result, error: rpcError } = await supabase
                     .rpc('create_organization_secure', { org_name: orgName })
 
@@ -43,8 +54,8 @@ export default function OnboardingPage() {
 
                 const newOrg = result as any
                 orgId = newOrg.id
-            } else {
-                // Use secure RPC to join organization
+                role = 'owner'
+            } else if (mode === 'join') {
                 const { data: result, error: rpcError } = await supabase
                     .rpc('join_organization_secure', { code: joinCode })
 
@@ -57,6 +68,18 @@ export default function OnboardingPage() {
 
                 const foundOrg = result as any
                 orgId = foundOrg.id
+                role = 'member'
+            } else if (mode === 'invite' && inviteToken) {
+                const { data: result, error: rpcError } = await supabase
+                    .rpc('join_via_invite_link', { invite_token: inviteToken })
+
+                if (rpcError) {
+                    throw new Error(rpcError.message)
+                }
+
+                const foundOrg = result as any
+                orgId = foundOrg.id
+                role = 'member'
             }
 
             const { error: profileError } = await supabase
@@ -111,16 +134,26 @@ export default function OnboardingPage() {
                                     <p className="font-bold">サークルに参加</p>
                                     <p className="text-xs text-gray-500">招待コードをお持ちの方</p>
                                 </button>
-                                {user?.user_metadata.role === 'owner' && (
-                                    <button
-                                        type="button"
-                                        onClick={() => setMode('create')}
-                                        className="p-4 border-2 border-gray-100 rounded-xl hover:border-black transition-colors"
-                                    >
-                                        <p className="font-bold">サークルを作成</p>
-                                        <p className="text-xs text-gray-500">新しく団体を立ち上げる方</p>
-                                    </button>
-                                )}
+                                <button
+                                    type="button"
+                                    onClick={() => setMode('create')}
+                                    className="p-4 border-2 border-gray-100 rounded-xl hover:border-black transition-colors"
+                                >
+                                    <p className="font-bold">サークルを作成</p>
+                                    <p className="text-xs text-gray-500">新しく団体を立ち上げる方</p>
+                                </button>
+                            </div>
+                        ) : mode === 'invite' ? (
+                            <div className="p-4 bg-blue-50 rounded-xl">
+                                <p className="text-sm font-bold text-blue-800">招待リンクでサークルに参加します</p>
+                                <p className="text-xs text-blue-600 mt-1">下の「はじめる」を押して参加してください</p>
+                                <button
+                                    type="button"
+                                    onClick={() => { setMode(null); router.replace('/onboarding') }}
+                                    className="mt-2 text-xs text-gray-500 underline"
+                                >
+                                    戻る
+                                </button>
                             </div>
                         ) : mode === 'create' ? (
                             <div>

@@ -10,7 +10,6 @@ export default function LoginPage() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [isSignUp, setIsSignUp] = useState(false)
-    const [ownerCode, setOwnerCode] = useState('')
     const router = useRouter()
     const supabase = createClient()
 
@@ -21,19 +20,9 @@ export default function LoginPage() {
 
         try {
             if (isSignUp) {
-                // Validation for owner role
-                if (ownerCode && ownerCode !== process.env.NEXT_PUBLIC_OWNER_CREATE_CODE) {
-                    throw new Error('オーナー作成コードが正しくありません。')
-                }
-
                 const { error } = await supabase.auth.signUp({
                     email,
                     password,
-                    options: {
-                        data: {
-                            role: ownerCode ? 'owner' : 'member',
-                        },
-                    },
                 })
                 if (error) throw error
                 alert('確認メールを送信しました。')
@@ -84,17 +73,6 @@ export default function LoginPage() {
                                 onChange={(e) => setPassword(e.target.value)}
                             />
                         </div>
-                        {isSignUp && (
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">オーナー作成コード (管理者のみ)</label>
-                                <input
-                                    type="text"
-                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black text-gray-900 bg-white"
-                                    value={ownerCode}
-                                    onChange={(e) => setOwnerCode(e.target.value)}
-                                />
-                            </div>
-                        )}
                     </div>
 
                     {error && <p className="text-red-500 text-sm">{error}</p>}

@@ -73,7 +73,7 @@ export default function EventsPage() {
                             <CalendarDays size={18} />
                         </button>
                     </div>
-                    {profile?.role === 'owner' && (
+                    {(profile?.role === 'owner' || profile?.role === 'admin') && (
                         <Link href="/events/create" className="bg-[var(--knot-red)] text-white p-3 rounded-full shadow-[0_4px_14px_rgba(191,30,44,0.4)] hover:bg-[#a01925] hover:-translate-y-1 transition-all">
                             <Plus size={24} />
                         </Link>

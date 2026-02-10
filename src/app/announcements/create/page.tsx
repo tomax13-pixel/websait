@@ -29,7 +29,7 @@ export default function CreateAnnouncementPage() {
                 .eq('user_id', user.id)
                 .single()
 
-            if (data?.role !== 'owner') {
+            if (data?.role !== 'owner' && data?.role !== 'admin') {
                 router.push('/announcements')
             }
             setProfile(data)

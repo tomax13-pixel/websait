@@ -48,7 +48,7 @@ export default function AnnouncementsPage() {
         <div className="p-6 space-y-6">
             <header className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold">お知らせ</h1>
-                {profile?.role === 'owner' && (
+                {(profile?.role === 'owner' || profile?.role === 'admin') && (
                     <Link href="/announcements/create" className="bg-black text-white p-2 rounded-full shadow-lg hover:bg-gray-800">
                         <Plus size={24} />
                     </Link>
